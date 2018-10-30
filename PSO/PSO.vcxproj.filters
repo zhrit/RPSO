@@ -27,6 +27,9 @@
     <ClInclude Include="Performance.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="psocudalib.cuh">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -41,5 +44,10 @@
     <ClCompile Include="Performance.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="PSO_GPU.cu">
+      <Filter>源文件</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

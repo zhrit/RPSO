@@ -180,13 +180,6 @@ void PSO::Run_CPU() {
 }
 
 /**
- * @brief 在CPU上运行
- */
-void PSO::Run_GPU() {
-	cout << "GPU" << endl;
-}
-
-/**
  * @brief 算法结果输出到控制台
  */
 void PSO::Output() const {
