@@ -7,7 +7,7 @@
 ***************************************************************/
 
 #include "pch.h"
-#include "PSO.h"
+#include "PSO.cuh"
 #include "Benchmark.h"
 #include "Performance.h"
 #include <Windows.h>

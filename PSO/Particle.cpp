@@ -7,7 +7,7 @@
 ***************************************************************/
 
 #include "pch.h"
-#include "PSO.h"
+#include "PSO.cuh"
 #include <windows.h>  
 #include <stdlib.h>
 #include <iostream>

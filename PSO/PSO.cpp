@@ -7,7 +7,7 @@
 ***************************************************************/
 
 #include "pch.h"
-#include "PSO.h"
+#include "PSO.cuh"
 #include <windows.h>  
 #include <stdlib.h>
 #include <iostream>
@@ -189,6 +189,7 @@ void PSO::Output() const {
 	cout << endl << "最优值：" << m_result_value << endl;
 	cout << "实际迭代次数：" << m_t_act << endl;
 	cout << "实际消耗时间：" << m_time_cost << endl;
+	cout << "目标函数运行次数：" << Benchmark::T << endl;
 	cout << "结果状态值：" << m_status << endl;
 }
 

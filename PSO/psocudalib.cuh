@@ -10,7 +10,10 @@ using namespace std;
  */
 namespace psocudalib {
 	__global__ void kernel_rng(float *data);
-	__device__ float randomNumber(int id);
+	__device__ double randomNumber(int id);
+
+	__device__ double sphere(double *xx, int d, int offset);
+
 	void printDeviceProp(const cudaDeviceProp &prop);
 	/**
 	 * @brief CUDA初始化函数
@@ -81,15 +84,23 @@ namespace psocudalib {
 	/**
 	 * 随机数生成函数
 	 */
-	__device__ float randomNumber(int id) {
+	__device__ double randomNumber(int id) {
 		int n;
 		n = clock() + clock() * id;
 		n = n ^ (n << 21);
 		// n = n ^ (n >> 35);
 		n = n ^ (n << 4);
 		if (n < 0) n = -n;
-		float n_f = float(n) / 2147483647.0f;//2141041196;//2147483647.0f;
+		double n_f = double(n) / 2147483647.0f;//2141041196;//2147483647.0f;
 		return n_f;
+	}
+
+	__device__ double sphere(double *xx, int d, int offset) {
+		double result = 0.0;
+		for (int i = 0; i < d; i++) {
+			result += xx[offset + i] * xx[offset + i];
+		}
+		return result;
 	}
 }
 

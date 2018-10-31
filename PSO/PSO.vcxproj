@@ -162,7 +162,7 @@
     <ClInclude Include="Particle.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Performance.h" />
-    <ClInclude Include="PSO.h" />
+    <CudaCompile Include="PSO.cuh" />
     <ClInclude Include="psocudalib.cuh" />
   </ItemGroup>
   <ItemGroup>

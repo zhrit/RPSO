@@ -2,7 +2,7 @@
 *  本文件包含粒子类的声明                                          *
 *  @author   ZhRiT                                             *
 *  @email    buaazhangrit@163.com                              *
-*  @version  1.0.0                                             *
+*  @version  1.0.1                                             *
 *  @date     2018-09-21                                        *
 ***************************************************************/
 #pragma once
