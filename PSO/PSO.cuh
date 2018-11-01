@@ -287,4 +287,40 @@ namespace psokernel {
 	 * @param funcIdx 目标函数序号
 	 */
 	__global__ void GetFitness(double *xx, double *value, int d, int n, int funcIdx);
+
+	/**
+	 * @breif 更新个体最优
+	 * @param xx      位置
+	 * @param value   目标函数值
+	 * @param pbestx  个体最优位置
+	 * @param pbest   个体最优值
+	 * @param d       维数
+	 * @param n       粒子个数
+	 * @param iter    当前迭代次数
+	 */
+	__global__ void UpdatePbest(double *xx, double *value, double *pbestx, double *pbest, int d, int n, int iter);
+
+	/**
+	 * @breif 更新个体最优
+	 * @param gbest      全局最优标记
+	 * @param pbest      个体最优值
+	 * @param d          维数
+	 * @param n          粒子个数
+	 * @param threadNum  线程数 大于等于粒子个数的最小2的幂
+	 */
+	__global__ void UpdateGbest(int *gbest, double *pbest, int d, int n, int threadNum);
+
+	/**
+	 * @breif 更新粒子位置
+	 * @param xx      位置
+	 * @param vx      速度
+	 * @param pbestx  个体最优位置
+	 * @param gbest   全局最优标记
+	 * @param d       维数
+	 * @param n       粒子个数
+	 * @param min     位置下界
+	 * @param max     位置上界
+	 */
+	__global__ void UpdateParticles(double *xx, double *vx, double *pbestx, int *gbest, int d, int n, double *min, double *max);
+
 }

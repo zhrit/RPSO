@@ -50,19 +50,6 @@ void PSO::Initialize(double (*obj)(double*, int), int d, double *min, double *ma
  * @brief 启动算法，完成算法主要逻辑
  */
 void PSO::Run() {
-	if (m_controller[string("parallel")] == 0) {
-		Run_CPU();
-	}
-	else {
-		Run_GPU();
-	}
-}
-
-/**
- * @brief 在CPU上运行
- */
-void PSO::Run_CPU() {
-	cout << "CPU" << endl;
 	/********** 预处理 **********/
 	// 目标函数执行次数设置为0
 	Benchmark::T = 0;
@@ -71,7 +58,8 @@ void PSO::Run_CPU() {
 	if (m_d == 0) {
 		cout << "请通过Initialize()方法或SetD()方法给定优化问题的维度！" << endl;
 		m_status = INPUTERROR;
-	} else {}
+	}
+	else {}
 	if (m_objFun == nullptr) {
 		cout << "请通过Initialize()方法或SetObjFun()方法给定优化问题的目标函数！" << endl;
 		m_status = INPUTERROR;
@@ -86,11 +74,29 @@ void PSO::Run_CPU() {
 	cout << "=====算法启动！=====" << endl;
 	cout << "=====" << (m_controller[string("model")] ? "求解模式" : "测试模式") << "==";
 	cout << topologyStr[m_controller[string("topology")]] << "==";
-	cout << (m_controller[string("minmax")] ? "最大值问题" : "最小值问题") << "=====" << endl;
+	cout << (m_controller[string("minmax")] ? "最大值问题" : "最小值问题") << "==";
+	cout << (m_controller[string("parallel")] ? "GPU" : "CPU") << "=====" << endl;
 	cout << "最大迭代次数：" << m_tMax << "，  粒子个数：" << m_number << "，  问题维度：" << m_d << "。" << endl;
 
 	double beginTime = GetTickCount();
+	if (m_controller[string("parallel")] == 0) {
+		Run_CPU();
+	}
+	else {
+		Run_GPU();
+	}
 
+	double endTime = GetTickCount();
+	m_time_cost = endTime - beginTime;
+
+	cout << "=====结束！=====" << endl;
+	Output();
+}
+
+/**
+ * @brief 在CPU上运行
+ */
+void PSO::Run_CPU() {
 	// 常数初始化
 	const double c1 = 2.05, c2 = 2.05;
 	const double phi = c1 + c2;
@@ -106,7 +112,7 @@ void PSO::Run_CPU() {
 		// cout << *(m_Particles + i) << endl;
 	}
 	// 主循环
-	for (int t = 0; t < m_tMax; t++) {
+	for (int t = 0; t <= m_tMax; t++) {
 		// 更新个体最优位置和个体最优值
 		for (int i = 0; i < m_number; i++) {
 			(m_Particles + i)->UpdateBest(m_controller["minmax"]);
@@ -120,14 +126,14 @@ void PSO::Run_CPU() {
 				m_status = SUCCESS;
 				break;
 			}
-			else if (t == m_tMax - 1) {
+			else if (t == m_tMax) {
 				m_t_act = t;
 				m_status = FAIL;
 				break;
 			}
 		}
 		else {
-			if (t == m_tMax - 1) {
+			if (t == m_tMax) {
 				m_t_act = t;
 				m_status = OK;
 				break;
@@ -169,12 +175,6 @@ void PSO::Run_CPU() {
 	//r11 = nullptr;
 	//delete[] r22;
 	//r22 = nullptr;
-
-	double endTime = GetTickCount();
-	m_time_cost = endTime - beginTime;
-	
-	cout << "=====结束！=====" << endl;
-	Output();
 }
 
 /**
