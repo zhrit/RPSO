@@ -18,13 +18,16 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="PSO.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Benchmark.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Performance.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="psocudalib.cuh">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Particle.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -41,5 +44,16 @@
     <ClCompile Include="Performance.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Particle.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="PSO_GPU.cu">
+      <Filter>源文件</Filter>
+    </CudaCompile>
+    <CudaCompile Include="PSO.cuh">
+      <Filter>头文件</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

@@ -1,5 +1,13 @@
+/***************************************************************
+*  本文件包含PSO算法性能测试相关函数                                *
+*  @author   ZhRiT                                             *
+*  @email    buaazhangrit@163.com                              *
+*  @version  1.0.0                                             *
+*  @date     2018-09-20                                        *
+***************************************************************/
+
 #include "pch.h"
-#include "PSO.h"
+#include "PSO.cuh"
 #include "Benchmark.h"
 #include "Performance.h"
 #include <Windows.h>
