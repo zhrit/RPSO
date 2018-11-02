@@ -58,6 +58,13 @@ void PSO::Run_GPU() {
 
 	dim3 threadsN(6, 6);
 	dim3 blocksN(1, 1);
+
+	// 比较树总数：大于粒子个数的最小二的幂
+	int threadNum = 1;
+	while (threadNum < m_number) {
+		threadNum <<= 1;
+	}
+
 	// 初始化粒子
 	psokernel::InitParticles << <blocks, threads >> > (xx, vx, pbestx, gbest, m_d, m_number, min, max);
 
@@ -65,12 +72,13 @@ void PSO::Run_GPU() {
 	do {
 		psokernel::GetFitness << <blocksN, threadsN >> > (xx, value, m_d, m_number, 1); //计算目标函数值
 		psokernel::UpdatePbest << <blocks, threads >> > (xx, value, pbestx, pbest, m_d, m_number, iter); //更新个体最优
-		psokernel::UpdateGbest << <blocksN, threadsN, 2 * m_number * sizeof(double) >> > (gbest, pbest, m_d, m_number, 16);//更新全局最优
+		psokernel::UpdateGbest << <blocksN, threadsN, 2 * m_number * sizeof(double) >> > (gbest, pbest, m_d, m_number, threadNum);//更新全局最优
 		psokernel::UpdateParticles << <blocks, threads >> > (xx, vx, pbestx, gbest, m_d, m_number, min, max);// 更新粒子位置
 		iter++;
 	} while (iter < m_tMax); //m_tMax
 
 	m_t_act = iter;
+	m_status = OK;
 
 	// 取结果
 	//double *rxx = new double[m_d * m_number];
@@ -175,8 +183,8 @@ namespace psokernel {
 		int ty = threadIdx.y;
 		// 计算编号 有共享内存的问题等待优化
 		int index = bx * gridDim.x * blockDim.x * blockDim.y + by * blockDim.x * blockDim.y + ty * blockDim.x + tx;
-
-		int n_curr = index / d;
+		
+		int n_curr = index / d; 
 
 		if (index < d * n) {
 			if (iter == 0) {
