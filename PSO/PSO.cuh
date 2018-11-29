@@ -24,23 +24,64 @@ class PSO {
 public:
 	/*----- 核心功能 -----*/
 	PSO() {
-		m_controller[string("model")] = 0;         //模式：0-测试模式，1-求解模式
-		m_controller[string("useResample")] = 0;   //是否开启重采样：0-关闭，1-开启
-		m_controller[string("resampleMethod")] = 0;//重采样方式
-		m_controller[string("topology")] = 0;      //拓扑方式 0-全局拓扑 1-环形拓扑 2-随机拓扑
-		m_controller[string("minmax")] = 0;        //0-最小值，1-最大值
-		m_controller[string("parallel")] = 0;      //0-CPU，1-GPU
+		m_controller[string("model")] = PSOMODEL::TEST;
+		m_controller[string("useResample")] = PSOSTATUS_RESA::CLOSE;
+		m_controller[string("resampleMethod")] = PSOFUNC_RESA::RESA_STAN;
+		m_controller[string("topology")] = PSOFUNC_TOPO::GLOBAL;
+		m_controller[string("minmax")] = PSOMINMAX::MIN;
+		m_controller[string("parallel")] = PSODEVICE::CPU;
 	};
 	virtual ~PSO() {
 		delete[] m_result_value_ite;
 		delete[] m_result_pos;
+		delete[] m_vMax;
 		m_objFun = nullptr;
 		m_Particles = nullptr;
 		m_min = nullptr; 
 		m_max = nullptr;
 		m_result_value_ite = nullptr;
 		m_result_pos = nullptr;
+		m_vMax = nullptr;
 	};
+
+	/**
+	 * 枚举定义
+	 */
+	//运行模式
+	typedef enum {
+		TEST = 0,
+		SOLVE,
+	} PSOMODEL;
+	//是否重采样
+	typedef enum {
+		CLOSE = 0,
+		OPEN,
+	} PSOSTATUS_RESA;
+	//重采样方法
+	typedef enum {
+		RESA_STAN = 0,
+		RESA_MULT,
+		RESA_STRA,
+		RESA_SYST,
+		RESA_RESI,
+		RESA_RESISYST,
+	} PSOFUNC_RESA;
+	//拓扑结构
+	typedef enum {
+		GLOBAL = 0,
+		RING,
+		RANDON,
+	} PSOFUNC_TOPO;
+	//最大值还是最小值
+	typedef enum {
+		MIN = 0,
+		MAX,
+	} PSOMINMAX;
+	//运行设备
+	typedef enum {
+		CPU = 0,
+		GPU,
+	} PSODEVICE;
 
 	/**
 	 * @brief 算法初始化
@@ -211,6 +252,7 @@ private:
 	Particle *m_Particles{ nullptr };             // 粒子群
 	double *m_min{ nullptr };                     // 下界
 	double *m_max{ nullptr };                     // 上界
+	double *m_vMax{ nullptr };                    // 最大速度
 
 	/*----- 结果 -----*/
 	double *m_result_value_ite;                   // 每一次迭代的最优值

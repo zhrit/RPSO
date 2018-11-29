@@ -32,7 +32,7 @@ public:
 	 * @param objFun 目标函数
 	 * @return
 	 */
-	void Initialize(int d, double* min, double* max, double(*objFun)(double*, int));
+	void Initialize(int d, double* min, double* max, double* vMax, double(*objFun)(double*, int));
 
 	/**
 	 * @brief 随机产生粒子的位置和速度
@@ -109,6 +109,7 @@ public:
 	double m_Value;                             // 当前位置对应的目标函数值
 	double *m_min;                              // 位置下界
 	double *m_max;                              // 位置上界
+	double *m_vMax;                             // 速度最大值
 	int m_Size;                                 // 维数
 	bool isNull{ true };                        // 是否为空（是否经过初始化）
 

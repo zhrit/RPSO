@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 using namespace std;
-
+static void ValueInRange(double &v, const double min, const double max);
 /*----------------------------------------------------------粒子类定义--------------------------------------------------------------*/
 Particle::Particle() {
 	// 重新设置随机种子，在random()方法中用到了随机数
@@ -38,6 +38,7 @@ Particle::~Particle() {
 	m_Pos_best_local = nullptr;
 	m_min = nullptr;
 	m_max = nullptr;
+	m_vMax = nullptr;
 }
 
 /**
@@ -50,7 +51,7 @@ Particle::~Particle() {
  * @param objFun 目标函数
  * @return
  */
-void Particle::Initialize(int d, double* min, double* max, double(*objFun)(double*, int)) {
+void Particle::Initialize(int d, double* min, double* max, double* vMax, double(*objFun)(double*, int)) {
 	isNull = false;
 	m_Size = d;
 	m_Pos = new double[d];
@@ -60,6 +61,7 @@ void Particle::Initialize(int d, double* min, double* max, double(*objFun)(doubl
 	m_objFun = objFun;
 	m_min = min;
 	m_max = max;
+	m_vMax = vMax;
 	Random();
 	InitBest();
 }
@@ -71,6 +73,7 @@ void Particle::Random() {
 	for (int i = 0; i < m_Size; i++) {
 		m_Pos[i] = rand() / double(RAND_MAX) * (m_max[i] - m_min[i]) + m_min[i];
 		m_Vec[i] = rand() / double(RAND_MAX) * (m_max[i] - m_min[i]) + m_min[i] - m_Pos[i];
+		ValueInRange(m_Vec[i], -m_vMax[i], m_vMax[i]);
 	}
 	m_Value = CalValue();
 }
@@ -142,6 +145,7 @@ void Particle::Move(double chi, double c1, double c2, double r1, double r2, cons
 	if (gb == nullptr) gb = m_Pos_best_local;
 	for (int i = 0; i < m_Size; i++) {
 		m_Vec[i] = chi * (m_Vec[i] + c1 * r1 * (m_Pos_best[i] - m_Pos[i]) + c2 * r2 * (gb[i] - m_Pos[i]));
+		ValueInRange(m_Vec[i], -m_vMax[i], m_vMax[i]);
 		m_Pos[i] += m_Vec[i];
 		// 超出范围的处理
 		if (m_Pos[i] < m_min[i]) {
@@ -160,6 +164,7 @@ void Particle::Move(double chi, double c1, double c2, const double* r1, const do
 	if (gb == nullptr) gb = m_Pos_best_local;
 	for (int i = 0; i < m_Size; i++) {
 		m_Vec[i] = chi * (m_Vec[i] + c1 * r1[i] * (m_Pos_best[i] - m_Pos[i]) + c2 * r2[i] * (gb[i] - m_Pos[i]));
+		ValueInRange(m_Vec[i], -m_vMax[i], m_vMax[i]); 
 		m_Pos[i] += m_Vec[i];
 		// 超出范围的处理
 		if (m_Pos[i] < m_min[i]) {
@@ -180,6 +185,7 @@ void Particle::Move(double chi, double c1, double c2, const double *gb) {
 		double r1 = rand() / (double)(RAND_MAX);
 		double r2 = rand() / (double)(RAND_MAX);
 		m_Vec[i] = chi * (m_Vec[i] + c1 * r1 * (m_Pos_best[i] - m_Pos[i]) + c2 * r2 * (gb[i] - m_Pos[i]));
+		ValueInRange(m_Vec[i], -m_vMax[i], m_vMax[i]);
 		m_Pos[i] += m_Vec[i];
 		// 超出范围的处理
 		if (m_Pos[i] < m_min[i]) {
@@ -250,4 +256,16 @@ ostream& operator<<(ostream &out, Particle &par) {
 	out << endl;
 	out << setw(12) << "bset value: " << par.m_Value << endl;
 	return out;
+}
+
+static void ValueInRange(double &v, const double min, const double max) {
+	if (v > max) {
+		v = max;
+	}
+	else if (v < min) {
+		v = min;
+	}
+	else {
+
+	}
 }

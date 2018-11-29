@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 using namespace std;
-
+static void ValueInRange(double &v, const double min, const double max);
 /*----------------------------------------------------------粒子群优化算法类定义--------------------------------------------------------------*/
 
 /**
@@ -44,6 +44,10 @@ void PSO::Initialize(double (*obj)(double*, int), int d, double *min, double *ma
 
 	m_result_value_ite = new double[m_tMax];
 	m_result_pos = new double[m_d];
+	m_vMax = new double[m_d];
+	for (int i = 0; i < m_d; i++) {
+		m_vMax[i] = (m_max[i] - m_min[i]) / 2.0;
+	}
 }
 
 /**
@@ -72,14 +76,14 @@ void PSO::Run() {
 	/********** 算法状态输出 **********/
 	string topologyStr[3] = { "全局拓扑", "环形拓扑", "随机拓扑" };
 	cout << "=====算法启动！=====" << endl;
-	cout << "=====" << (m_controller[string("model")] ? "求解模式" : "测试模式") << "==";
+	cout << "=====" << (m_controller[string("model")] == PSOMODEL::SOLVE ? "求解模式" : "测试模式") << "==";
 	cout << topologyStr[m_controller[string("topology")]] << "==";
-	cout << (m_controller[string("minmax")] ? "最大值问题" : "最小值问题") << "==";
-	cout << (m_controller[string("parallel")] ? "GPU" : "CPU") << "=====" << endl;
+	cout << (m_controller[string("minmax")] == PSOMINMAX::MAX ? "最大值问题" : "最小值问题") << "==";
+	cout << (m_controller[string("parallel")] == PSODEVICE::GPU ? "GPU" : "CPU") << "=====" << endl;
 	cout << "最大迭代次数：" << m_tMax << "，  粒子个数：" << m_number << "，  问题维度：" << m_d << "。" << endl;
 
 	double beginTime = GetTickCount();
-	if (m_controller[string("parallel")] == 0) {
+	if (m_controller[string("parallel")] == PSODEVICE::CPU) {
 		Run_CPU();
 	}
 	else {
@@ -108,7 +112,7 @@ void PSO::Run_CPU() {
 	//cout << "=====初始化粒子！=====" << endl;
 	m_Particles = new Particle[m_number];
 	for (int i = 0; i < m_number; i++) {
-		(m_Particles + i)->Initialize(m_d, m_min, m_max, m_objFun);
+		(m_Particles + i)->Initialize(m_d, m_min, m_max, m_vMax, m_objFun);
 		// cout << *(m_Particles + i) << endl;
 	}
 	// 主循环
@@ -120,7 +124,7 @@ void PSO::Run_CPU() {
 		// 更新全局最优位置和全局最优值
 		_UpdateGlobalBest(t);
 		// 判断是否达到精度和退出循环的条件
-		if (m_controller[string("model")] == 0) {
+		if (m_controller[string("model")] == PSOMODEL::TEST) {
 			if (abs(m_result_value - m_opt_theo) <= m_precision) {
 				m_t_act = t;
 				m_status = SUCCESS;
@@ -140,7 +144,7 @@ void PSO::Run_CPU() {
 			}
 		}
 		// 重采样
-		if (m_controller[string("useResample")] == 1) {
+		if (m_controller[string("useResample")] == PSOSTATUS_RESA::OPEN) {
 			_Resample(t);
 		}
 		// 速度更新
@@ -150,7 +154,7 @@ void PSO::Run_CPU() {
 		//	r11[i] = rand() / (double)(RAND_MAX);
 		//	r22[i] = rand() / (double)(RAND_MAX);
 		//}
-		if (m_controller[string("topology")] == 0) {
+		if (m_controller[string("topology")] == PSOFUNC_TOPO::GLOBAL) {
 			for (int i = 0; i < m_number; i++) {
 				//double r1 = rand() / (double)(RAND_MAX);
 				//double r2 = rand() / (double)(RAND_MAX);
@@ -298,7 +302,7 @@ void PSO::_UpdateGlobalBest(int t_current) {
 			}
 		}
 		else {
-			if (m_controller["minmax"] == 0) {
+			if (m_controller["minmax"] == PSOMINMAX::MIN) {
 				if ((m_Particles + i)->m_Value_best < m_result_value) {
 					m_result_value = (m_Particles + i)->m_Value_best;
 					for (int j = 0; j < m_d; j++) {
@@ -323,9 +327,9 @@ void PSO::_UpdateGlobalBest(int t_current) {
  * @brief 更新局部最优
  */
 void PSO::_UpdateLocalBest() {
-	if (m_controller[string("topology")] == 1) {
+	if (m_controller[string("topology")] == PSOFUNC_TOPO::RING) {
 		// 环形拓扑
-		if (m_controller["minmax"] == 0) {
+		if (m_controller["minmax"] == PSOMINMAX::MIN) {
 			for (int i = 0; i < m_number; i++) {
 				int lp = i - 1, rp;
 				if (lp < 0) { lp += m_number; }
@@ -352,9 +356,9 @@ void PSO::_UpdateLocalBest() {
 			}
 		}
 	}
-	else if (m_controller[string("topology")] == 2) {
+	else if (m_controller[string("topology")] == PSOFUNC_TOPO::RANDON) {
 		// 随机拓扑
-		if (m_controller["minmax"] == 0) {
+		if (m_controller["minmax"] == PSOMINMAX::MIN) {
 		}
 		else {
 
@@ -370,22 +374,22 @@ void PSO::_UpdateLocalBest() {
  */
 void PSO::_Resample(int t) {
 	switch (m_controller[string("resampleMethod")]) {
-	case 0:
+	case PSOFUNC_RESA::RESA_STAN:
 		_StanResample(t);
 		break;
-	case 1:
+	case PSOFUNC_RESA::RESA_MULT:
 		_MultResample(t);
 		break;
-	case 2:
+	case PSOFUNC_RESA::RESA_STRA:
 		_StraResample(t);
 		break;
-	case 3:
+	case PSOFUNC_RESA::RESA_SYST:
 		_SystResample(t);
 		break;
-	case 4:
+	case PSOFUNC_RESA::RESA_RESI:
 		_ResiResample(t);
 		break;
-	case 5:
+	case PSOFUNC_RESA::RESA_RESISYST:
 		_ResiSystResample(t);
 		break;
 	default:
@@ -843,10 +847,11 @@ void PSO::_Copy4Resample(Particle* p1, const Particle* p2, int t) {
 			double(m_tMax - t) / (2.0 * double(m_tMax)) * p2->m_Vec[i];*/
 		p1->m_Vec[i] = double(m_tMax + t) / (2.0 * double(m_tMax)) * p2->m_Vec[i] +
 			double(m_tMax - t) / (2.0 * double(m_tMax)) * v_r;
+		ValueInRange(p1->m_Vec[i], -p1->m_vMax[i], p1->m_vMax[i]);
 	}
 
 	// 个体最优位置、个体最优值、局部最优位置、局部最优值-取最好
-	if (m_controller["minmax"] == 0) {
+	if (m_controller["minmax"] == PSOMINMAX::MIN) {
 		if (p2->m_Value_best < p1->m_Value_best) {
 			p1->m_Value_best = p2->m_Value_best;
 			p1->m_Value_best_local = p2->m_Value_best_local;
@@ -865,5 +870,18 @@ void PSO::_Copy4Resample(Particle* p1, const Particle* p2, int t) {
 				p1->m_Pos_best_local[i] = p2->m_Pos_best_local[i];
 			}
 		}
+	}
+}
+
+
+static void ValueInRange(double &v, const double min, const double max) {
+	if (v > max) {
+		v = max;
+	}
+	else if (v < min) {
+		v = min;
+	}
+	else {
+
 	}
 }
