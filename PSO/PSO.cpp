@@ -16,6 +16,7 @@
 #include <ctime>
 #include <string>
 #include <vector>
+#include "PenaltyHelper.h"
 using namespace std;
 static void ValueInRange(double &v, const double min, const double max);
 /*----------------------------------------------------------粒子群优化算法类定义--------------------------------------------------------------*/
@@ -43,6 +44,7 @@ void PSO::Initialize(double (*obj)(double*, int), int d, double *min, double *ma
 	m_precision = prec;
 
 	m_result_value_ite = new double[m_tMax];
+	m_result_objValue_ite = new double[m_tMax];
 	m_result_pos = new double[m_d];
 	m_vMax = new double[m_d];
 	for (int i = 0; i < m_d; i++) {
@@ -58,6 +60,8 @@ void PSO::Run() {
 	// 目标函数执行次数设置为0
 	Benchmark::T = 0;
 	m_t_obj = 0;
+	// 约束函数惩罚项工具初始化
+	PenaltyHelper::Init();
 	/********** 环境监测 **********/
 	if (m_d == 0) {
 		cout << "请通过Initialize()方法或SetD()方法给定优化问题的维度！" << endl;
@@ -190,11 +194,22 @@ void PSO::Output() const {
 	for (int i = 0; i < m_d; i++) {
 		cout << m_result_pos[i] << ", ";
 	}
-	cout << endl << "最优值：" << m_result_value << endl;
+	cout << endl << "最优值(适应度)：" << m_result_value << endl;
+	cout << endl << "最优值(目标函数)：" << m_result_objValue << endl;
 	cout << "实际迭代次数：" << m_t_act << endl;
 	cout << "实际消耗时间：" << m_time_cost << endl;
 	cout << "目标函数运行次数：" << Benchmark::T << endl;
 	cout << "结果状态值：" << m_status << endl;
+	cout << "适应度迭代过程：";
+	for (int i = 0; i <= m_t_act; i++) {
+		if (i % 10 == 0) cout << "\n";
+		cout << m_result_value_ite[i] << ", ";
+	}
+	cout << endl << "适应度迭代过程：";
+	for (int i = 0; i <= m_t_act; i++) {
+		if (i % 10 == 0) cout << "\n";
+		cout << m_result_objValue_ite[i] << ", ";
+	}
 }
 
 /**
@@ -257,6 +272,13 @@ double *PSO::GetMax() const {
 	return m_max;
 }
 
+void PSO::SetvMax(double* vMax) {
+	m_vMax = vMax;
+}
+double *PSO::GetVMax() const {
+	return m_vMax;
+}
+
 void PSO::SetOptTheo(double opt) {
 	m_opt_theo = opt;
 }
@@ -287,6 +309,22 @@ Status PSO::GetStatus() const {
 	return m_status;
 }
 
+double *PSO::GetResultValueIte() const {
+	return m_result_value_ite;
+}
+double *PSO::GetResultObjValueIte() const {
+	return m_result_objValue_ite;
+}
+double PSO::GetResultValue() const {
+	return m_result_value;
+}
+double PSO::GetResultObjValue() const {
+	return m_result_objValue;
+}
+double *PSO::GetResultPos() const {
+	return m_result_pos;
+}
+
 /*----- 内部方法 -----*/
 
 /**
@@ -294,9 +332,12 @@ Status PSO::GetStatus() const {
  * @param t_current  当前迭代次数
  */
 void PSO::_UpdateGlobalBest(int t_current) {
+	// 当有约束时，m_result_value是适应度函数=目标函数值+惩罚项，
+	// m_result_objValue是目标函数值，不包含罚函数项
 	for (int i = 0; i < m_number; i++) {
 		if (i == 0 && t_current == 0) {
 			m_result_value = (m_Particles + i)->m_Value_best;
+			m_result_objValue = PenaltyHelper::RealObj[t_current * m_number + i];
 			for (int j = 0; j < m_d; j++) {
 				m_result_pos[j] = (m_Particles + i)->m_Pos_best[j];
 			}
@@ -305,6 +346,7 @@ void PSO::_UpdateGlobalBest(int t_current) {
 			if (m_controller["minmax"] == PSOMINMAX::MIN) {
 				if ((m_Particles + i)->m_Value_best < m_result_value) {
 					m_result_value = (m_Particles + i)->m_Value_best;
+					m_result_objValue = PenaltyHelper::RealObj[t_current * m_number + i];
 					for (int j = 0; j < m_d; j++) {
 						m_result_pos[j] = (m_Particles + i)->m_Pos_best[j];
 					}
@@ -313,6 +355,7 @@ void PSO::_UpdateGlobalBest(int t_current) {
 			else {
 				if ((m_Particles + i)->m_Value_best > m_result_value) {
 					m_result_value = (m_Particles + i)->m_Value_best;
+					m_result_objValue = PenaltyHelper::RealObj[t_current * m_number + i];
 					for (int j = 0; j < m_d; j++) {
 						m_result_pos[j] = (m_Particles + i)->m_Pos_best[j];
 					}
@@ -321,6 +364,7 @@ void PSO::_UpdateGlobalBest(int t_current) {
 		}
 	}
 	m_result_value_ite[t_current] = m_result_value;
+	m_result_objValue_ite[t_current] = m_result_objValue;
 }
 
 /**

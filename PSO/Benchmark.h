@@ -10,6 +10,7 @@
 
 #include <cmath>
 #include <time.h>
+#include "PenaltyHelper.h"
 using namespace std;
 
 #ifndef PI
@@ -43,6 +44,7 @@ public:
 			s += x[i] * x[i];
 		}
 		Benchmark::T++;
+		PenaltyHelper::RealObj.push_back(s);
 		return s;
 	}
 

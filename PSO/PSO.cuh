@@ -33,6 +33,7 @@ public:
 	};
 	virtual ~PSO() {
 		delete[] m_result_value_ite;
+		delete[] m_result_objValue_ite;
 		delete[] m_result_pos;
 		delete[] m_vMax;
 		m_objFun = nullptr;
@@ -40,6 +41,7 @@ public:
 		m_min = nullptr; 
 		m_max = nullptr;
 		m_result_value_ite = nullptr;
+		m_result_objValue_ite = nullptr;
 		m_result_pos = nullptr;
 		m_vMax = nullptr;
 	};
@@ -138,6 +140,9 @@ public:
 	void SetMax(double*);
 	double *GetMax() const;
 
+	void SetvMax(double*);
+	double *GetVMax() const;
+
 	void SetOptTheo(double);
 	double GetOptTheo() const;
 
@@ -151,6 +156,12 @@ public:
 	int GetTObj() const;
 
 	Status GetStatus() const;
+
+	double *GetResultValueIte() const;
+	double GetResultValue() const;
+	double *GetResultPos() const;
+	double *GetResultObjValueIte() const;
+	double GetResultObjValue() const;
 
 private:
 	/**
@@ -255,8 +266,10 @@ private:
 	double *m_vMax{ nullptr };                    // 最大速度
 
 	/*----- 结果 -----*/
-	double *m_result_value_ite;                   // 每一次迭代的最优值
-	double m_result_value;                        // 全局最优值（结果）
+	double *m_result_value_ite;                   // 每一次迭代的最优值(适应度)
+	double *m_result_objValue_ite;                // 每一次迭代的最优值(目标函数)
+	double m_result_value;                        // 全局最优值（适应度结果）
+	double m_result_objValue;                     // 全局最优值（目标函数结果）
 	double *m_result_pos;                         // 全局最优位置（结果）
 	int m_t_act;                                  // 实际迭代次数
 	double m_time_cost;                           // 消耗的时间
