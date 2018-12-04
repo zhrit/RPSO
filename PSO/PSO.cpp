@@ -122,6 +122,7 @@ void PSO::Run_CPU() {
 	// 主循环
 	for (int t = 0; t <= m_tMax; t++) {
 		// 更新个体最优位置和个体最优值
+		//cout << t << endl;
 		for (int i = 0; i < m_number; i++) {
 			(m_Particles + i)->UpdateBest(m_controller["minmax"]);
 		}
@@ -160,10 +161,12 @@ void PSO::Run_CPU() {
 		//}
 		if (m_controller[string("topology")] == PSOFUNC_TOPO::GLOBAL) {
 			for (int i = 0; i < m_number; i++) {
+				//cout << i << ", ";
 				//double r1 = rand() / (double)(RAND_MAX);
 				//double r2 = rand() / (double)(RAND_MAX);
 				(m_Particles + i)->Move(chi, c1, c2, m_result_pos);
 			}
+			//cout << endl;
 		}
 		else {
 			_UpdateLocalBest();
@@ -209,6 +212,16 @@ void PSO::Output() const {
 	for (int i = 0; i <= m_t_act; i++) {
 		if (i % 10 == 0) cout << "\n";
 		cout << m_result_objValue_ite[i] << ", ";
+	}
+	cout << endl << "约束迭代过程：";
+	for (int i = 0; i <= m_t_act; i++) {
+		ResultInfo info = m_result_ct_ite[i];
+		if (!info.CTValue.empty()) {
+			for (double it : info.CTValue) {
+				cout << it << ", ";
+			}
+			cout << endl;
+		}
 	}
 }
 
@@ -337,7 +350,8 @@ void PSO::_UpdateGlobalBest(int t_current) {
 	for (int i = 0; i < m_number; i++) {
 		if (i == 0 && t_current == 0) {
 			m_result_value = (m_Particles + i)->m_Value_best;
-			m_result_objValue = PenaltyHelper::RealObj[t_current * m_number + i];
+			m_result_objValue = PenaltyHelper::ResInfo[t_current * m_number + i].RealObj;
+			m_result_ct = PenaltyHelper::ResInfo[t_current * m_number + i];
 			for (int j = 0; j < m_d; j++) {
 				m_result_pos[j] = (m_Particles + i)->m_Pos_best[j];
 			}
@@ -346,7 +360,8 @@ void PSO::_UpdateGlobalBest(int t_current) {
 			if (m_controller["minmax"] == PSOMINMAX::MIN) {
 				if ((m_Particles + i)->m_Value_best < m_result_value) {
 					m_result_value = (m_Particles + i)->m_Value_best;
-					m_result_objValue = PenaltyHelper::RealObj[t_current * m_number + i];
+					m_result_ct = PenaltyHelper::ResInfo[t_current * m_number + i];
+					m_result_objValue = PenaltyHelper::ResInfo[t_current * m_number + i].RealObj;
 					for (int j = 0; j < m_d; j++) {
 						m_result_pos[j] = (m_Particles + i)->m_Pos_best[j];
 					}
@@ -355,7 +370,8 @@ void PSO::_UpdateGlobalBest(int t_current) {
 			else {
 				if ((m_Particles + i)->m_Value_best > m_result_value) {
 					m_result_value = (m_Particles + i)->m_Value_best;
-					m_result_objValue = PenaltyHelper::RealObj[t_current * m_number + i];
+					m_result_objValue = PenaltyHelper::ResInfo[t_current * m_number + i].RealObj;
+					m_result_ct = PenaltyHelper::ResInfo[t_current * m_number + i];
 					for (int j = 0; j < m_d; j++) {
 						m_result_pos[j] = (m_Particles + i)->m_Pos_best[j];
 					}
@@ -365,6 +381,7 @@ void PSO::_UpdateGlobalBest(int t_current) {
 	}
 	m_result_value_ite[t_current] = m_result_value;
 	m_result_objValue_ite[t_current] = m_result_objValue;
+	m_result_ct_ite.push_back(m_result_ct);
 }
 
 /**

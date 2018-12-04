@@ -44,7 +44,10 @@ public:
 			s += x[i] * x[i];
 		}
 		Benchmark::T++;
-		PenaltyHelper::RealObj.push_back(s);
+
+		ResultInfo info;
+		info.RealObj = s;
+		PenaltyHelper::ResInfo.push_back(info);
 		return s;
 	}
 

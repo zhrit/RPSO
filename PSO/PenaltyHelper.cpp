@@ -2,8 +2,8 @@
 #include "PenaltyHelper.h"
 
 
-std::vector<double> PenaltyHelper::RealObj;
+std::vector<ResultInfo> PenaltyHelper::ResInfo;
 
 void PenaltyHelper::Init() {
-	RealObj.clear();
+	ResInfo.clear();
 }

@@ -1,5 +1,11 @@
 #pragma once
 #include <vector>
+
+struct ResultInfo {
+	double RealObj;
+	std::vector<double> CTValue;
+};
+
 class PenaltyHelper
 {
 public:
@@ -10,7 +16,7 @@ public:
 
 	}
 
-	static std::vector<double> RealObj;
+	static std::vector<ResultInfo> ResInfo;
 
 	static void Init();
 };
